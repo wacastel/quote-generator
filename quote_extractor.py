@@ -70,7 +70,6 @@ def save_to_csv(parsed_data: dict, output_filename: str = "quote_output.csv"):
     """
     Flattens the structured JSON data and appends it to a CSV file.
     """
-    # Define the headers, flattening the nested 'dimensions' object
     headers = [
         "Project Type",
         "Substrate",
@@ -81,7 +80,6 @@ def save_to_csv(parsed_data: dict, output_filename: str = "quote_output.csv"):
         "Confidence Score"
     ]
 
-    # Extract values safely using .get()
     row_data = [
         parsed_data.get("project_type", ""),
         parsed_data.get("substrate", ""),
@@ -94,14 +92,10 @@ def save_to_csv(parsed_data: dict, output_filename: str = "quote_output.csv"):
 
     file_exists = os.path.isfile(output_filename)
     
-    # Append to the file (or create it if it doesn't exist)
     with open(output_filename, mode='a', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
-        
-        # Only write the header row if this is a brand new file
         if not file_exists:
             writer.writerow(headers)
-            
         writer.writerow(row_data)
 
 # ==========================================
@@ -109,16 +103,21 @@ def save_to_csv(parsed_data: dict, output_filename: str = "quote_output.csv"):
 # ==========================================
 if __name__ == "__main__":
     
-    test_email = """
-    Hi team, attached is a sketch for a new custom hanging sign. 
-    We need 100 of these for our midwest stores. Weather resistant material, die-cut shape. 
-    Can you handle? Looking to order soon.
-    """
-    
+    # Define file paths
+    email_file_path = "email_input.txt"
     test_image_path = "test_sketch.jpg" 
     csv_filename = "image_works_quotes.csv"
     
+    # Safely read the email text from the file
+    try:
+        with open(email_file_path, "r", encoding="utf-8") as file:
+            test_email = file.read()
+    except FileNotFoundError:
+        print(f"Error: Could not find '{email_file_path}'. Please create this file, paste your test email into it, and try again.")
+        exit(1)
+    
     print("Initializing Gemini API Call using modern SDK...")
+    print(f"Loading email from: {email_file_path}")
     print(f"Loading image from: {test_image_path}")
     print("-" * 40)
     
@@ -140,3 +139,4 @@ if __name__ == "__main__":
     except json.JSONDecodeError:
         print("Failed to decode JSON. Raw response from API:")
         print(raw_json_result)
+    
