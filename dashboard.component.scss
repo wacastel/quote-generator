@@ -1,0 +1,22 @@
+/* Core Layout */
+.dashboard-grid { display: flex; gap: 20px; }
+.pane { flex: 1; background: white; border-radius: 8px; border: 1px solid #e2e8f0; }
+input[type="text"], input[type="number"], textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;}
+
+/* Confidence Highlight System */
+.spec-field { padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; border-left-width: 4px; margin-bottom: 15px; background: white; }
+.field-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold;}
+
+.conf-high { border-left-color: #22c55e; }
+.conf-high .conf-text { color: #16a34a; font-size: 0.85rem;}
+
+.conf-medium { border-left-color: #f59e0b; background: #fffbeb; }
+.conf-medium .conf-text { color: #d97706; font-size: 0.85rem;}
+
+.conf-low { border-left-color: #ef4444; background: #fef2f2; }
+.conf-low .conf-text { color: #dc2626; font-size: 0.85rem;}
+.conf-low input { border-color: #fca5a5; }
+
+.attention-req { color: #dc2626; font-size: 0.8rem; font-weight: 600; margin-top: 8px; }
+
+/* Modal styles omitted for brevity, standardize with basic fixed overlays */

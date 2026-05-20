@@ -1,0 +1,103 @@
+<div class="app-container">
+  <div class="title-bar">
+    <h2>SIDE-BY-SIDE QUOTE VERIFICATION | RFQ ID: IW-98745</h2>
+  </div>
+
+  <div class="dashboard-grid">
+    <div class="pane pane-left">
+      <div class="pane-header">
+        <h3>CUSTOMER REQUEST (UNSTRUCTURED INPUT)</h3>
+        <span class="badge badge-messy">⊗ MESSY</span>
+      </div>
+      
+      <div class="pane-body">
+        <div *ngIf="!specs">
+          <label>Email Body:</label>
+          <textarea [(ngModel)]="emailInput" rows="6"></textarea>
+          
+          <label>Upload Documents & Images (Multiple Allowed):</label>
+          <input type="file" multiple (change)="onFilesSelected($event)" accept="image/*,.pdf,.txt">
+          
+          <button class="btn-primary" (click)="extractSpecs()" [disabled]="isProcessing">
+            {{ isProcessing ? 'AI is Extracting...' : 'Extract Specs' }}
+          </button>
+        </div>
+
+        <div *ngIf="specs">
+          <div class="email-display" style="white-space: pre-wrap">{{ emailInput }}</div>
+          <div class="attachments mt-4" *ngIf="previewUrls.length">
+            <img *ngFor="let url of previewUrls" [src]="url" class="attached-img">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pane pane-right">
+      <div class="pane-header">
+        <h3>✓ CLEAN AI-EXTRACTED SPECS (STRUCTURED OUTPUT)</h3>
+      </div>
+      
+      <div class="pane-body empty-state" *ngIf="!specs && !isProcessing">Waiting for upload...</div>
+      <div class="pane-body empty-state" *ngIf="isProcessing">Processing with Gemini 2.5...</div>
+
+      <div class="pane-body specs-container" *ngIf="specs">
+        <div class="spec-field" [ngClass]="getConfidenceClass(specs.project_type.confidence)">
+          <div class="field-header">
+            <label>Project Type</label>
+            <span class="conf-text">Confidence: {{ specs.project_type.confidence }}</span>
+          </div>
+          <input type="text" [(ngModel)]="specs.project_type.value">
+          <div class="reasoning">{{ specs.project_type.reasoning }}</div>
+        </div>
+
+        <div class="spec-field" [ngClass]="getConfidenceClass(specs.substrate.confidence)">
+          <div class="field-header">
+            <label>Substrate</label>
+            <span class="conf-text">Confidence: {{ specs.substrate.confidence }}</span>
+          </div>
+          <input type="text" [(ngModel)]="specs.substrate.value">
+        </div>
+
+        <div class="spec-field" [ngClass]="getConfidenceClass(specs.dimensions.confidence)">
+          <div class="field-header">
+            <label>Dimensions</label>
+            <span class="conf-text">Confidence: {{ specs.dimensions.confidence }}</span>
+          </div>
+          <div class="dim-inputs">
+            <input type="number" [(ngModel)]="specs.dimensions.value.width"> x 
+            <input type="number" [(ngModel)]="specs.dimensions.value.height"> 
+            <input type="text" [(ngModel)]="specs.dimensions.value.unit" style="width: 60px;">
+          </div>
+          <div *ngIf="specs.dimensions.confidence === 'Low'" class="attention-req">
+            ⚠️ Attention Required: Verify dimensions against sketch.
+          </div>
+        </div>
+
+        <div class="verification-box">
+          <h4>HUMAN VERIFICATION</h4>
+          <button class="btn-approve" (click)="showPreview = true">APPROVE SPECS & GENERATE QUOTE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" *ngIf="showPreview">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Quote Preview</h2>
+        <button class="close-btn" (click)="showPreview = false">✕</button>
+      </div>
+      <div class="quote-document">
+        <h1 class="company-name">IMAGEWORKS MANUFACTURING INC.</h1>
+        <hr>
+        <p><strong>Item:</strong> {{ specs?.project_type.value }}</p>
+        <p><strong>Material:</strong> {{ specs?.substrate.value }}</p>
+        <p><strong>Dimensions:</strong> {{ specs?.dimensions.value.width }} x {{ specs?.dimensions.value.height }} {{ specs?.dimensions.value.unit }}</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="showPreview = false">Cancel</button>
+        <button class="btn-primary">Email to Customer</button>
+      </div>
+    </div>
+  </div>
+</div>
