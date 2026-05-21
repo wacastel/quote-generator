@@ -1,7 +1,37 @@
 /* Core Layout */
 .dashboard-grid { display: flex; gap: 20px; }
 .pane { flex: 1; background: white; border-radius: 8px; border: 1px solid #e2e8f0; }
-input[type="text"], input[type="number"], textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;}
+
+/* Base Form Elements */
+input[type="text"], input[type="number"], textarea { 
+  width: 100%; 
+  padding: 10px; 
+  border: 1px solid #cbd5e1; 
+  border-radius: 6px;
+}
+
+/* Prevent inputs from stretching infinitely (leave textarea as 100%) */
+input[type="text"], input[type="number"] {
+  max-width: 400px;
+}
+
+/* Keep dimension inputs compact */
+.dim-inputs input {
+  max-width: 90px;
+  margin-right: 5px;
+  margin-left: 5px;
+}
+
+/* Image Preview Styling */
+.attached-img {
+  max-width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  border: 1px solid #e2e8f0;
+}
 
 /* Confidence Highlight System */
 .spec-field { padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; border-left-width: 4px; margin-bottom: 15px; background: white; }
@@ -18,5 +48,3 @@ input[type="text"], input[type="number"], textarea { width: 100%; padding: 10px;
 .conf-low input { border-color: #fca5a5; }
 
 .attention-req { color: #dc2626; font-size: 0.8rem; font-weight: 600; margin-top: 8px; }
-
-/* Modal styles omitted for brevity, standardize with basic fixed overlays */
