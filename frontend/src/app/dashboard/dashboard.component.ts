@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-dashboard',
@@ -41,7 +42,7 @@ export class DashboardComponent {
     formData.append('email_text', this.emailInput);
     this.selectedFiles.forEach(file => formData.append('files', file));
 
-    this.http.post('http://localhost:8000/api/extract-quote', formData).subscribe({
+    this.http.post(`${environment.apiUrl}/api/extract-quote`, formData).subscribe({
       next: (res: any) => { this.specs = res; this.isProcessing = false; },
       error: (err) => { alert('Extraction failed.'); this.isProcessing = false; }
     });
