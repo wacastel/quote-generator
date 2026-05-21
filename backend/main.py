@@ -72,17 +72,26 @@ class QuoteRequest(BaseModel):
 # --- Endpoints ---
 @app.post("/api/extract-quote")
 async def extract_quote(email_text: str = Form(""), files: List[UploadFile] = File(...)):
+    print("\n" + "="*50)
+    print("🔍 NEW EXTRACTION REQUEST INITIATED")
+    print("="*50)
+    
     images = []
+    print(f"Initial email_text length: {len(email_text)} characters")
+    print(f"Number of files uploaded: {len(files)}")
     
     # Handle simultaneous multiple files
     for file in files:
         contents = await file.read()
+        print(f"Processing uploaded file: {file.filename} | Content-Type: {file.content_type}")
+        
         if file.content_type.startswith("image/"):
             images.append(Image.open(io.BytesIO(contents)))
         elif file.content_type.startswith("text/"):
             email_text += f"\n[Attachment: {file.filename}]\n" + contents.decode("utf-8")
 
     if not images and not email_text:
+        print("❌ ERROR: No images or text provided.")
         raise HTTPException(status_code=400, detail="Provide text or images.")
 
     config = types.GenerateContentConfig(
@@ -97,10 +106,29 @@ async def extract_quote(email_text: str = Form(""), files: List[UploadFile] = Fi
     )
     
     prompt = f"Customer Request:\n{email_text}\n\nExtract specs."
+    print("\n📤 SENDING TO GEMINI API:")
+    print(f"- Text prompt length: {len(prompt)} characters")
+    print(f"- Number of images attached: {len(images)}")
+    
     try:
         response = client.models.generate_content(model='gemini-2.5-flash', contents=[prompt] + images, config=config)
-        return json.loads(response.text)
+        
+        print("\n📥 RAW RESPONSE FROM GEMINI:")
+        print(response.text)
+        
+        parsed_response = json.loads(response.text)
+        print("\n✅ SUCCESSFULLY PARSED JSON:")
+        print(json.dumps(parsed_response, indent=2))
+        print("="*50 + "\n")
+        
+        return parsed_response
+        
+    except json.JSONDecodeError as e:
+        print(f"\n❌ JSON DECODE ERROR: {str(e)}")
+        print(f"Raw output was: {response.text}")
+        raise HTTPException(status_code=500, detail="Failed to parse Gemini response as JSON.")
     except Exception as e:
+        print(f"\n❌ UNEXPECTED ERROR: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # Admin Database Endpoint

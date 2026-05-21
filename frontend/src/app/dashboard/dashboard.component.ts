@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
@@ -20,13 +20,13 @@ export class DashboardComponent {
   specs: any = null;
   showPreview = false;
 
-  constructor(private http: HttpClient) {}
+  // We added ChangeDetectorRef here
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
   onFilesSelected(event: any) {
     this.selectedFiles = Array.from(event.target.files);
     this.previewUrls = [];
     
-    // Create localized image previews for the left pane
     this.selectedFiles.forEach(file => {
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
@@ -38,17 +38,35 @@ export class DashboardComponent {
 
   extractSpecs() {
     this.isProcessing = true;
+    console.log('🚀 Sending payload to backend...');
+
     const formData = new FormData();
     formData.append('email_text', this.emailInput);
     this.selectedFiles.forEach(file => formData.append('files', file));
 
     this.http.post(`${environment.apiUrl}/api/extract-quote`, formData).subscribe({
-      next: (res: any) => { this.specs = res; this.isProcessing = false; },
-      error: (err) => { alert('Extraction failed.'); this.isProcessing = false; }
+      next: (res: any) => { 
+        console.log('✅ RAW RESPONSE RECEIVED:', res);
+        
+        // Defensive check: If the API returned a string, parse it into an object
+        const parsedSpecs = typeof res === 'string' ? JSON.parse(res) : res;
+        console.log('🧩 FINAL PARSED SPECS:', parsedSpecs);
+
+        this.specs = parsedSpecs; 
+        this.isProcessing = false; 
+        
+        // FORCE Angular to update the HTML template
+        this.cdr.detectChanges();
+      },
+      error: (err) => { 
+        console.error('❌ HTTP ERROR:', err);
+        alert('Extraction failed. Check the console.'); 
+        this.isProcessing = false; 
+        this.cdr.detectChanges();
+      }
     });
   }
 
-  // Dynamic CSS Class Assignment
   getConfidenceClass(score: string): string {
     if (score === 'Low') return 'conf-low';
     if (score === 'Medium') return 'conf-medium';
